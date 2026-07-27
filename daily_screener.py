@@ -103,7 +103,10 @@ def main():
     save_flagged(flagged)
     print(f"{new_flags} token baru direkomendasikan hari ini. Total log sepanjang waktu: {len(flagged)}.")
 
-    if new_flags == 0:
+    # Kirim konfirmasi "masih hidup" cuma sekali sehari (saat run jam 08:00 WIB
+    # = 01:00 UTC), supaya tidak spam kalau screener dijalankan tiap beberapa jam.
+    is_daily_confirmation_run = datetime.now(timezone.utc).hour == 1
+    if new_flags == 0 and is_daily_confirmation_run:
         send_telegram(
             f"✅ Screening harian selesai — belum ada token yang lolos filter ketat hari ini.\n"
             f"_(Dicek: {len(addresses)} token profile baru)_"
@@ -112,4 +115,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
+    
