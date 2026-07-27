@@ -35,3 +35,4 @@ jobs:
           git add data/flagged_tokens.json
           git diff --staged --quiet || git commit -m "Update flagged tokens log"
           git push
+          
