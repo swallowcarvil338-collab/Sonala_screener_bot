@@ -103,6 +103,13 @@ def main():
     save_flagged(flagged)
     print(f"{new_flags} token baru direkomendasikan hari ini. Total log sepanjang waktu: {len(flagged)}.")
 
+    if new_flags == 0:
+        send_telegram(
+            f"✅ Screening harian selesai — belum ada token yang lolos filter ketat hari ini.\n"
+            f"_(Dicek: {len(addresses)} token profile baru)_"
+        )
+
 
 if __name__ == "__main__":
     main()
+        
