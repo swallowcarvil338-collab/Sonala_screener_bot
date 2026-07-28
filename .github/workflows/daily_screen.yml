@@ -2,9 +2,10 @@ name: Daily Solana Screener
 
 "on":
   schedule:
-    # Tiap 4 jam: 01:00, 05:00, 09:00, 13:00, 17:00, 21:00 UTC
-    # = 08:00, 12:00, 16:00, 20:00, 00:00, 04:00 WIB
-    - cron: '0 1,5,9,13,17,21 * * *'
+    # Tiap 4 jam, geser ke menit :17 (bukan :00) untuk menghindari antrian
+    # GitHub yang padat di awal jam — lihat catatan GitHub soal keterlambatan
+    # jadwal di https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#schedule
+    - cron: '17 1,5,9,13,17,21 * * *'
   workflow_dispatch: {}
 
 permissions:
@@ -36,3 +37,4 @@ jobs:
           git add data/
           git diff --staged --quiet || git commit -m "Update flagged tokens log"
           git push
+          
