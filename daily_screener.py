@@ -13,7 +13,7 @@ advice.
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from screener_common import (
     get_latest_solana_token_addresses,
@@ -25,6 +25,8 @@ from screener_common import (
 )
 
 LOG_PATH = os.path.join(os.path.dirname(__file__), "data", "flagged_tokens.json")
+STATE_PATH = os.path.join(os.path.dirname(__file__), "data", "state.json")
+WIB = timezone(timedelta(hours=7))
 
 
 def load_flagged():
@@ -41,6 +43,22 @@ def save_flagged(entries):
     os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
     with open(LOG_PATH, "w") as f:
         json.dump(entries, f, indent=2)
+
+
+def load_state():
+    if not os.path.exists(STATE_PATH):
+        return {}
+    with open(STATE_PATH, "r") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+
+
+def save_state(state):
+    os.makedirs(os.path.dirname(STATE_PATH), exist_ok=True)
+    with open(STATE_PATH, "w") as f:
+        json.dump(state, f, indent=2)
 
 
 def format_alert(pair, reasons):
@@ -103,16 +121,20 @@ def main():
     save_flagged(flagged)
     print(f"{new_flags} token baru direkomendasikan hari ini. Total log sepanjang waktu: {len(flagged)}.")
 
-    # Kirim konfirmasi "masih hidup" cuma sekali sehari (saat run jam 08:00 WIB
-    # = 01:00 UTC), supaya tidak spam kalau screener dijalankan tiap beberapa jam.
-    is_daily_confirmation_run = datetime.now(timezone.utc).hour == 1
-    if new_flags == 0 and is_daily_confirmation_run:
+    # Kirim konfirmasi "masih hidup" cuma sekali per hari kalender (WIB),
+    # dari run manapun yang pertama kali "notice" belum terkirim hari itu.
+    # Ini lebih tahan terhadap keterlambatan jadwal GitHub Actions dibanding
+    # mencocokkan jam secara presisi.
+    state = load_state()
+    today_wib = datetime.now(WIB).strftime("%Y-%m-%d")
+    if new_flags == 0 and state.get("last_confirmation_date") != today_wib:
         send_telegram(
-            f"✅ Screening harian selesai — belum ada token yang lolos filter ketat hari ini.\n"
+            f"✅ Screening selesai — belum ada token yang lolos filter ketat hari ini.\n"
             f"_(Dicek: {len(addresses)} token profile baru)_"
         )
+        state["last_confirmation_date"] = today_wib
+        save_state(state)
 
 
 if __name__ == "__main__":
     main()
-    
