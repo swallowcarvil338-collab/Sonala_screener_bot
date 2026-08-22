@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "address": "9w8CbxpdCGcQwPwVS5oacQ4MZhSbenLtNNZW52gxpump",
+    "symbol": "USMS",
+    "flagged_date": "2026-08-22",
+    "price_at_flag": 0.001763,
+    "liquidity_at_flag": 106491.71,
+    "url": "https://dexscreener.com/solana/cw4sqehwhfh8xfadpwbnkfpbgn4cs28zxxqopr3vxbme"
+  }
+]
